@@ -26,7 +26,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
+        return Category.objects.filter(models.Q(user=self.request.user) | models.Q(user__isnull=True))
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

@@ -57,27 +57,35 @@
 
   .glass-card {
     @apply bg-gray-900/60 backdrop-blur-lg border border-green-500/20 shadow-2xl rounded-2xl;
-    content-visibility: auto;
+    will-change: transform, opacity;
   }
 
   @media (max-width: 768px) {
-
-    .glass,
     .glass-card {
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      @apply backdrop-blur-md;
+      /* Reduce blur intensity on mobile */
+    }
+
+    .glass {
+      @apply backdrop-blur-md;
     }
   }
 
-  .input-field {
-    @apply w-full p-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition-colors placeholder-gray-500;
+  .glass,
+  .glass-card {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
+}
 
-  .btn-primary {
-    @apply bg-gradient-to-r from-green-600 to-green-800 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg active:scale-95;
-  }
+.input-field {
+  @apply w-full p-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition-colors placeholder-gray-500;
+}
 
-  .btn-secondary {
-    @apply bg-gray-700 text-gray-200 font-bold py-2 px-6 rounded-lg transition-all active:bg-gray-600;
-  }
+.btn-primary {
+  @apply bg-gradient-to-r from-green-600 to-green-800 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-gray-700 text-gray-200 font-bold py-2 px-6 rounded-lg transition-all active:bg-gray-600;
 }

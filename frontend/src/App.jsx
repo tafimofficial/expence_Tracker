@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { getExpenses, deleteExpense, getCategories } from './api';
 import Dashboard from './components/Dashboard';
@@ -23,21 +23,17 @@ function ExpenseTrackerApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
-  useEffect(() => {
-    fetchExpenses();
-    fetchCategories();
-  }, [filterType, customDate, searchQuery, selectedCategory]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const { data } = await getCategories();
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories", error);
     }
-  }
+  }, []);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       const params = {};
       const date = new Date(customDate);
@@ -66,9 +62,21 @@ function ExpenseTrackerApp() {
     } catch (error) {
       console.error('Error fetching expenses', error);
     }
-  };
+  }, [filterType, customDate, searchQuery, selectedCategory]);
 
-  const handleDelete = async (id) => {
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchExpenses();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchExpenses]);
+
+  const handleDelete = useCallback(async (id) => {
     if (confirm('আপনি কি নিশ্চিত যে আপনি এটি মুছে ফেলতে চান?')) {
       try {
         await deleteExpense(id);
@@ -77,18 +85,18 @@ function ExpenseTrackerApp() {
         console.error('Error deleting expense', error);
       }
     }
-  };
+  }, [fetchExpenses]);
 
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     setShowForm(false);
     setEditingExpense(null);
     fetchExpenses();
-  };
+  }, [fetchExpenses]);
 
-  const handleEdit = (expense) => {
+  const handleEdit = useCallback((expense) => {
     setEditingExpense(expense);
     setShowForm(true);
-  };
+  }, []);
 
   const getPeriodLabel = () => {
     if (filterType === 'all') return 'সর্বমোট হিসাব';
@@ -154,14 +162,19 @@ function ExpenseTrackerApp() {
         <Dashboard expenses={expenses} periodLabel={getPeriodLabel()} />
 
         {showForm && (
-          <ExpenseForm
-            onSuccess={handleSuccess}
-            expenseToEdit={editingExpense}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingExpense(null);
-            }}
-          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-2xl relative animate-in fade-in zoom-in duration-300">
+              <ExpenseForm
+                onSuccess={handleSuccess}
+                expenseToEdit={editingExpense}
+                categories={categories}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingExpense(null);
+                }}
+              />
+            </div>
+          </div>
         )}
 
         <ExpenseList

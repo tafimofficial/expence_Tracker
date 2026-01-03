@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { createExpense, updateExpense, getCategories } from '../api';
-import { ChevronDown } from 'lucide-react';
+import { createExpense, updateExpense } from '../api';
+import { ChevronDown, X } from 'lucide-react';
 
-const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
+const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel, categories = [] }) => {
     const [formData, setFormData] = useState({
         title: '',
         amount: '',
@@ -10,12 +10,10 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
         category: '',
         type: 'expense',
     });
-    const [categories, setCategories] = useState([]);
     const [isTypeOpen, setIsTypeOpen] = useState(false);
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
     useEffect(() => {
-        fetchCategories();
         if (expenseToEdit) {
             setFormData({
                 title: expenseToEdit.title,
@@ -26,15 +24,6 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
             });
         }
     }, [expenseToEdit]);
-
-    const fetchCategories = async () => {
-        try {
-            const { data } = await getCategories();
-            setCategories(data);
-        } catch (error) {
-            console.error('Error fetching categories', error);
-        }
-    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -55,7 +44,17 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="glass-card p-8 mb-8">
+        <form onSubmit={handleSubmit} className="glass-card p-8 relative">
+            {onCancel && (
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                    title="বন্ধ করুন"
+                >
+                    <X size={24} />
+                </button>
+            )}
             <h2 className="text-2xl font-bold mb-6 text-gray-100 border-b border-gray-700 pb-2">
                 {expenseToEdit ? 'হিসাব আপডেট করুন' : 'নতুন হিসাব যোগ করুন'}
             </h2>
@@ -115,17 +114,17 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
                     {isTypeOpen && (
                         <>
                             <div
-                                className="fixed inset-0 z-30"
+                                className="fixed inset-0 z-50"
                                 onClick={() => setIsTypeOpen(false)}
                             />
-                            <div className="absolute top-full mt-2 left-0 w-full glass-card bg-[#1a1a1a] border border-gray-700 overflow-hidden z-40 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="absolute top-full mt-3 left-0 w-full glass-card bg-[#0f0f0f]/95 border border-green-500/30 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 shadow-2xl ring-1 ring-black/50">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setFormData({ ...formData, type: 'expense' });
                                         setIsTypeOpen(false);
                                     }}
-                                    className={`w-full text-left px-4 py-3 rounded-t-lg transition-colors ${formData.type === 'expense' ? 'bg-red-500/20 text-red-400' : 'text-gray-300 hover:bg-gray-800'}`}
+                                    className={`w-full text-left px-5 py-4 transition-all border-b border-gray-800 ${formData.type === 'expense' ? 'bg-red-500/10 text-red-500 font-bold' : 'text-gray-300 hover:bg-gray-800/50 hover:pl-6'}`}
                                 >
                                     ব্যয় (Expense)
                                 </button>
@@ -135,7 +134,7 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
                                         setFormData({ ...formData, type: 'income' });
                                         setIsTypeOpen(false);
                                     }}
-                                    className={`w-full text-left px-4 py-3 rounded-b-lg transition-colors ${formData.type === 'income' ? 'bg-green-500/20 text-green-400' : 'text-gray-300 hover:bg-gray-800'}`}
+                                    className={`w-full text-left px-5 py-4 transition-all ${formData.type === 'income' ? 'bg-green-500/10 text-green-500 font-bold' : 'text-gray-300 hover:bg-gray-800/50 hover:pl-6'}`}
                                 >
                                     আয় (Income)
                                 </button>
@@ -165,18 +164,18 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
                     {isCategoryOpen && (
                         <>
                             <div
-                                className="fixed inset-0 z-30"
+                                className="fixed inset-0 z-50"
                                 onClick={() => setIsCategoryOpen(false)}
                             />
-                            <div className="absolute top-full mt-2 left-0 w-full glass-card bg-[#1a1a1a] border border-gray-700 overflow-hidden z-40 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="max-h-60 overflow-y-auto custom-scrollbar p-1">
+                            <div className="absolute bottom-full mb-3 left-0 w-full glass-card bg-[#0f0f0f]/95 border border-green-500/30 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 shadow-2xl ring-1 ring-black/50">
+                                <div className="max-h-60 overflow-y-auto custom-scrollbar">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setFormData({ ...formData, category: '' });
                                             setIsCategoryOpen(false);
                                         }}
-                                        className="w-full text-left px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors"
+                                        className="w-full text-left px-5 py-3 text-gray-400 hover:bg-gray-800/50 hover:text-white border-b border-gray-800 transition-all hover:pl-6 text-sm"
                                     >
                                         নির্বাচন করুন
                                     </button>
@@ -188,7 +187,7 @@ const ExpenseForm = ({ onSuccess, expenseToEdit, onCancel }) => {
                                                 setFormData({ ...formData, category: cat.id });
                                                 setIsCategoryOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${formData.category == cat.id ? 'bg-green-500/20 text-green-400' : 'text-gray-300 hover:bg-gray-800'}`}
+                                            className={`w-full text-left px-5 py-3 transition-all border-b border-gray-800/50 last:border-0 ${formData.category == cat.id ? 'bg-green-500/10 text-green-400 font-bold border-l-4 border-l-green-500 pl-4' : 'text-gray-300 hover:bg-gray-800/50 hover:pl-6'}`}
                                         >
                                             {cat.name}
                                         </button>
